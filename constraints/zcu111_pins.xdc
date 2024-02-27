@@ -14,13 +14,7 @@ set_property PACKAGE_PIN AB4 [get_ports ADC4_CLK_N]
 set_property PACKAGE_PIN Y5 [get_ports ADC6_CLK_P]
 set_property PACKAGE_PIN Y4 [get_ports ADC6_CLK_N]
 
-set_property PACKAGE_PIN N5 [get_ports DAC4_CLK_P]
-set_property PACKAGE_PIN N4 [get_ports DAC4_CLK_N]
-
-
 # maybe these don't even need anything?
-# It looks like you don't need these, because they come hardcoded
-# with the RFSoC Data Converter hard IP. They are defined here for "fun"
 set_property -dict { PACKAGE_PIN AP2 } [get_ports ADC0_VIN_P]
 set_property -dict { PACKAGE_PIN AP1 } [get_ports ADC0_VIN_N]
 set_property -dict { PACKAGE_PIN AM2 } [get_ports ADC1_VIN_P]
@@ -40,11 +34,6 @@ set_property -dict { PACKAGE_PIN AB2 } [get_ports ADC6_VIN_P]
 set_property -dict { PACKAGE_PIN AB1 } [get_ports ADC6_VIN_N]
 set_property -dict { PACKAGE_PIN  Y2 } [get_ports ADC7_VIN_P]
 set_property -dict { PACKAGE_PIN  Y1 } [get_ports ADC7_VIN_N]
-
-set_property -dict { PACKAGE_PIN E2 } [get_ports DAC6_VOUT_P]
-set_property -dict { PACKAGE_PIN E1 } [get_ports DAC6_VOUT_N]
-set_property -dict { PACKAGE_PIN C2 } [get_ports DAC7_VOUT_P]
-set_property -dict { PACKAGE_PIN C1 } [get_ports DAC7_VOUT_N]
 
 # ZCU111 constraints
 set_property -dict { IOSTANDARD LVDS DIFF_TERM TRUE PACKAGE_PIN AK17 } [get_ports SYSREF_FPGA_P]
