@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x26ABDC30B9DE7060",
+      "boundary_crc": "0x26ABDC30894F2CB2",
       "device": "xczu28dr-ffvg1517-2-e",
       "name": "zcu111_mts",
       "rev_ctrl_bd_flag": "RevCtrlBdOff",
