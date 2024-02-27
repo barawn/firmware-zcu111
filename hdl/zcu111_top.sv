@@ -66,6 +66,8 @@ module zcu111_top(
     wire aclk_div2;
     wire aresetn = 1'b1;
     // ADC AXI4-Streams
+    // These macros are definied in verilog-library-barawn/include/interfaces.vh.
+    // They definie the tdata, tvalid, and tready wires in a compact way.
     `DEFINE_AXI4S_MIN_IF( adc0_ , 128 );
     `DEFINE_AXI4S_MIN_IF( adc1_ , 128 );
     `DEFINE_AXI4S_MIN_IF( adc2_ , 128 );
@@ -86,6 +88,8 @@ module zcu111_top(
     // output clock (187.5 MHz, unused)
     wire adc_clk;
     
+    // The block comment section below appears to be all debugging
+    /*
     // something's wrong with the various sample clocks so let's try to test
     reg [31:0] adc_clk_counter = {32{1'b0}};
     (* CUSTOM_CC_SRC = "ACLK" *)
@@ -118,7 +122,7 @@ module zcu111_top(
     flag_sync u_refsync(.in_clkA(pps_flag),.clkA(ps_clk),.out_clkB(pps_flag_refclk),.clkB(ref_clk));
     flag_sync u_refdone(.in_clkA(pps_flag_refclk),.clkA(ref_clk),.out_clkB(refclk_freq_done),.clkB(ps_clk));
 
-    always @(posedge ps_clk) begin
+    always @(posedge ps_clk) begins
         if (adcclk_freq_done) adc_clk_freq_ps <= adc_clk_freq;
         if (refclk_freq_done) ref_clk_freq_ps <= ref_clk_freq;
     end
@@ -143,8 +147,13 @@ module zcu111_top(
     end        
 
     clk_count_vio u_vio(.clk(ps_clk),.probe_in0(adc_clk_freq_ps),.probe_in1(ref_clk_freq_ps));
-    
-    // generate clocks
+    */
+
+    // Generate clocks
+    // Input clock is the 24 MHz FPGA reference clock
+    // ref_clk is 75 MHz
+    // aclk is 375 MHz
+    // aclk_div2 is 187.5 MHz (half freq of aclk)
     slow_refclk_wiz u_rcwiz(.reset(refclkwiz_reset),
                             .clk_in1_p(FPGA_REFCLK_IN_P),
                             .clk_in1_n(FPGA_REFCLK_IN_N),
@@ -162,6 +171,10 @@ module zcu111_top(
     
     generate
          if (THIS_DESIGN == "MTS") begin : MTS
+            // These two dac_xfer_x2 modules connect:
+            // RF Data Converter ADC AXI4 stream ->
+            // dac_xfer module, which stacks two 128 data into one 256 ->
+            // RF Data Converter DAC AXI4 stream
             dac_xfer_x2 u_dac12_xfer( .aclk(aclk),
                                       .aresetn(1'b1),
                                       .aclk_div2(aclk_div2),
@@ -172,7 +185,9 @@ module zcu111_top(
                                       .aclk_div2(aclk_div2),
                                       `CONNECT_AXI4S_MIN_IF( s_axis_ , adc1_ ),
                                       `CONNECT_AXI4S_MIN_IF( m_axis_ , dac7_ ));
-                                 
+
+            // This is the block diagram's (zcu111_mts's) wrapper.
+            // The RF Data Converter IP is inside it, and is communicated with over AXI4 Stream interfaces                     
             zcu111_mts_wrapper u_ps( .Vp_Vn_0_v_p( VP ),
                                          .Vp_Vn_0_v_n( VN ),
                                          // sysref
@@ -205,6 +220,7 @@ module zcu111_top(
                                          .vin3_23_0_v_p( ADC7_VIN_P ),
                                          .vin3_23_0_v_n( ADC7_VIN_N ),
                                          // AXI stream *outputs*
+                                         // These are the ADC values, 
                                          `CONNECT_AXI4S_MIN_IF( m00_axis_0_ , adc0_ ),
                                          `CONNECT_AXI4S_MIN_IF( m02_axis_0_ , adc1_ ),
                                          `CONNECT_AXI4S_MIN_IF( m10_axis_0_ , adc2_ ),
