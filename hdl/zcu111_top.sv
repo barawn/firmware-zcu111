@@ -175,16 +175,17 @@ module zcu111_top(
             // RF Data Converter ADC AXI4 stream ->
             // dac_xfer module, which stacks two 128 data into one 256 ->
             // RF Data Converter DAC AXI4 stream
+            // Lucas: I AM SWAPPING DAC 6<->7 for testing
             dac_xfer_x2 u_dac12_xfer( .aclk(aclk),
                                       .aresetn(1'b1),
                                       .aclk_div2(aclk_div2),
                                       `CONNECT_AXI4S_MIN_IF( s_axis_ , adc0_ ),
-                                      `CONNECT_AXI4S_MIN_IF( m_axis_ , dac6_ ));
+                                      `CONNECT_AXI4S_MIN_IF( m_axis_ , dac7_ ));
             dac_xfer_x2 u_dac13_xfer( .aclk(aclk),
                                       .aresetn(1'b1),
                                       .aclk_div2(aclk_div2),
                                       `CONNECT_AXI4S_MIN_IF( s_axis_ , adc1_ ),
-                                      `CONNECT_AXI4S_MIN_IF( m_axis_ , dac7_ ));
+                                      `CONNECT_AXI4S_MIN_IF( m_axis_ , dac6_ ));
 
             // This is the block diagram's (zcu111_mts's) wrapper.
             // The RF Data Converter IP is inside it, and is communicated with over AXI4 Stream interfaces                     
@@ -220,7 +221,8 @@ module zcu111_top(
                                          .vin3_23_0_v_p( ADC7_VIN_P ),
                                          .vin3_23_0_v_n( ADC7_VIN_N ),
                                          // AXI stream *outputs*
-                                         // These are the ADC values, 
+                                         // These are the ADC values, fed back into the block diagram
+                                         // These inputs are sent to the ADC captures
                                          `CONNECT_AXI4S_MIN_IF( m00_axis_0_ , adc0_ ),
                                          `CONNECT_AXI4S_MIN_IF( m02_axis_0_ , adc1_ ),
                                          `CONNECT_AXI4S_MIN_IF( m10_axis_0_ , adc2_ ),
@@ -234,7 +236,7 @@ module zcu111_top(
                                          .s_axi_aresetn_0( 1'b1 ),
                                          .s_axis_aclk_0( aclk ),
                                          .s_axis_aresetn_0( 1'b1 ),
-                                         // feed back to inputs
+                                         // feed back to inputs for the ADC Captures
                                          `CONNECT_AXI4S_MIN_IF( S_AXIS_0_ , adc0_ ),
                                          `CONNECT_AXI4S_MIN_IF( S_AXIS_1_ , adc1_ ),
                                          `CONNECT_AXI4S_MIN_IF( S_AXIS_2_ , adc2_ ),
@@ -243,6 +245,8 @@ module zcu111_top(
                                          .dac1_clk_0_clk_p(DAC4_CLK_P),
                                          .dac1_clk_0_clk_n(DAC4_CLK_N),
                                          
+                                         //Swapping these for testing does nothing
+                                         //This is likely because they are hardwired
                                          .vout12_0_v_p(DAC6_VOUT_P),
                                          .vout12_0_v_n(DAC6_VOUT_N),
                                          .vout13_0_v_p(DAC7_VOUT_P),
