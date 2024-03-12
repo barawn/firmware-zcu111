@@ -7,8 +7,8 @@ module zcu111_top(
         input VP,               // doesn't need a pin loc
         input VN,               // doesn't need a pin loc
         // RFDC inputs
-        input ADC0_CLK_P,       // AF5 (300 MHz)
-        input ADC0_CLK_N,       // AF4 (300 MHz)
+        input ADC0_CLK_P,       // AF5 (300 MHz)(or maybe 600 as specified in IP?) Yes, 600.
+        input ADC0_CLK_N,       // AF4 (300 MHz)(or maybe 600 as specified in IP?)
         input ADC0_VIN_P,       // AP2
         input ADC0_VIN_N,       // AP1
         input ADC1_VIN_P,       // AM2
@@ -89,70 +89,70 @@ module zcu111_top(
     wire adc_clk;
     
     // The block comment section below appears to be all debugging
-    /*
-    // something's wrong with the various sample clocks so let's try to test
-    reg [31:0] adc_clk_counter = {32{1'b0}};
-    (* CUSTOM_CC_SRC = "ACLK" *)
-    reg [31:0] adc_clk_freq = {32{1'b0}};
-    (* CUSTOM_CC_DST = "PSCLK" *)
-    reg [31:0] adc_clk_freq_ps = {32{1'b0}};
+        /*
+        // something's wrong with the various sample clocks so let's try to test
+        reg [31:0] adc_clk_counter = {32{1'b0}};
+        (* CUSTOM_CC_SRC = "ACLK" *)
+        reg [31:0] adc_clk_freq = {32{1'b0}};
+        (* CUSTOM_CC_DST = "PSCLK" *)
+        reg [31:0] adc_clk_freq_ps = {32{1'b0}};
+            
+        reg [31:0] ref_clk_counter = {32{1'b0}};
+        (* CUSTOM_CC_SRC = "REFCLK" *)
+        reg [31:0] ref_clk_freq = {32{1'b0}};
+        (* CUSTOM_CC_DST = "PSCLK" *)
+        reg [31:0] ref_clk_freq_ps = {32{1'b0}};
         
-    reg [31:0] ref_clk_counter = {32{1'b0}};
-    (* CUSTOM_CC_SRC = "REFCLK" *)
-    reg [31:0] ref_clk_freq = {32{1'b0}};
-    (* CUSTOM_CC_DST = "PSCLK" *)
-    reg [31:0] ref_clk_freq_ps = {32{1'b0}};
-    
-    reg [31:0] pps_counter = {32{1'b0}};
-    reg pps_flag = 0;
-    wire pps_flag_adcclk;
-    wire pps_flag_refclk;
-    wire adcclk_freq_done;
-    wire refclk_freq_done;
-    
-                
-    // slower PL capture clk b/c 375 is too fast I guess? (75 MHz)
-    wire ref_clk;
-    // reset/locked, maybe pop these through EMIO
-    wire refclkwiz_reset = 1'b0;
-    wire refclkwiz_locked;
-
-    flag_sync u_adcsync(.in_clkA(pps_flag),.clkA(ps_clk),.out_clkB(pps_flag_adcclk),.clkB(adc_clk));
-    flag_sync u_adcdone(.in_clkA(pps_flag_adcclk),.clkA(adc_clk),.out_clkB(adcclk_freq_done),.clkB(ps_clk));
-    flag_sync u_refsync(.in_clkA(pps_flag),.clkA(ps_clk),.out_clkB(pps_flag_refclk),.clkB(ref_clk));
-    flag_sync u_refdone(.in_clkA(pps_flag_refclk),.clkA(ref_clk),.out_clkB(refclk_freq_done),.clkB(ps_clk));
-
-    always @(posedge ps_clk) begins
-        if (adcclk_freq_done) adc_clk_freq_ps <= adc_clk_freq;
-        if (refclk_freq_done) ref_clk_freq_ps <= ref_clk_freq;
-    end
-    
-    always @(posedge adc_clk) begin
-        if (pps_flag_adcclk) adc_clk_freq <= adc_clk_counter;
-        if (pps_flag_adcclk) adc_clk_counter <= {32{1'b0}};
-        else adc_clk_counter <= adc_clk_counter + 1;
-    end        
-    
-    always @(posedge ref_clk) begin
-        if (pps_flag_refclk) ref_clk_freq <= ref_clk_counter;
-        if (pps_flag_refclk) ref_clk_counter <= {32{1'b0}};
-        else ref_clk_counter <= ref_clk_counter + 1;
-    end        
-    
-    always @(posedge ps_clk) begin
-        if (pps_counter == 100000000 - 1) pps_counter <= {32{1'b0}};
-        else pps_counter <= pps_counter + 1;
+        reg [31:0] pps_counter = {32{1'b0}};
+        reg pps_flag = 0;
+        wire pps_flag_adcclk;
+        wire pps_flag_refclk;
+        wire adcclk_freq_done;
+        wire refclk_freq_done;
         
-        pps_flag <= (pps_counter == {32{1'b0}});
-    end        
+                    
+        // slower PL capture clk b/c 375 is too fast I guess? (75 MHz)
+        wire ref_clk;
+        // reset/locked, maybe pop these through EMIO
+        wire refclkwiz_reset = 1'b0;
+        wire refclkwiz_locked;
 
-    clk_count_vio u_vio(.clk(ps_clk),.probe_in0(adc_clk_freq_ps),.probe_in1(ref_clk_freq_ps));
-    */
+        flag_sync u_adcsync(.in_clkA(pps_flag),.clkA(ps_clk),.out_clkB(pps_flag_adcclk),.clkB(adc_clk));
+        flag_sync u_adcdone(.in_clkA(pps_flag_adcclk),.clkA(adc_clk),.out_clkB(adcclk_freq_done),.clkB(ps_clk));
+        flag_sync u_refsync(.in_clkA(pps_flag),.clkA(ps_clk),.out_clkB(pps_flag_refclk),.clkB(ref_clk));
+        flag_sync u_refdone(.in_clkA(pps_flag_refclk),.clkA(ref_clk),.out_clkB(refclk_freq_done),.clkB(ps_clk));
+
+        always @(posedge ps_clk) begins
+            if (adcclk_freq_done) adc_clk_freq_ps <= adc_clk_freq;
+            if (refclk_freq_done) ref_clk_freq_ps <= ref_clk_freq;
+        end
+        
+        always @(posedge adc_clk) begin
+            if (pps_flag_adcclk) adc_clk_freq <= adc_clk_counter;
+            if (pps_flag_adcclk) adc_clk_counter <= {32{1'b0}};
+            else adc_clk_counter <= adc_clk_counter + 1;
+        end        
+        
+        always @(posedge ref_clk) begin
+            if (pps_flag_refclk) ref_clk_freq <= ref_clk_counter;
+            if (pps_flag_refclk) ref_clk_counter <= {32{1'b0}};
+            else ref_clk_counter <= ref_clk_counter + 1;
+        end        
+        
+        always @(posedge ps_clk) begin
+            if (pps_counter == 100000000 - 1) pps_counter <= {32{1'b0}};
+            else pps_counter <= pps_counter + 1;
+            
+            pps_flag <= (pps_counter == {32{1'b0}});
+        end        
+
+        clk_count_vio u_vio(.clk(ps_clk),.probe_in0(adc_clk_freq_ps),.probe_in1(ref_clk_freq_ps));
+        */
 
     // Generate clocks
     // Input clock is the 24 MHz FPGA reference clock
     // ref_clk is 75 MHz
-    // aclk is 375 MHz
+    // aclk is 375 MHz (for AXI-Stream)
     // aclk_div2 is 187.5 MHz (half freq of aclk)
     slow_refclk_wiz u_rcwiz(.reset(refclkwiz_reset),
                             .clk_in1_p(FPGA_REFCLK_IN_P),
@@ -180,12 +180,12 @@ module zcu111_top(
                                       .aresetn(1'b1),
                                       .aclk_div2(aclk_div2),
                                       `CONNECT_AXI4S_MIN_IF( s_axis_ , adc0_ ),
-                                      `CONNECT_AXI4S_MIN_IF( m_axis_ , dac7_ ));
+                                      `CONNECT_AXI4S_MIN_IF( m_axis_ , dac6_ ));
             dac_xfer_x2 u_dac13_xfer( .aclk(aclk),
                                       .aresetn(1'b1),
                                       .aclk_div2(aclk_div2),
                                       `CONNECT_AXI4S_MIN_IF( s_axis_ , adc1_ ),
-                                      `CONNECT_AXI4S_MIN_IF( m_axis_ , dac6_ ));
+                                      `CONNECT_AXI4S_MIN_IF( m_axis_ , dac7_ ));
 
             // This is the block diagram's (zcu111_mts's) wrapper.
             // The RF Data Converter IP is inside it, and is communicated with over AXI4 Stream interfaces                     
@@ -195,7 +195,7 @@ module zcu111_top(
                                          .sysref_in_0_diff_p( SYSREF_P ),
                                          .sysref_in_0_diff_n( SYSREF_N ),
                                          // clocks
-                                         .adc0_clk_0_clk_p( ADC0_CLK_P ),
+                                         .adc0_clk_0_clk_p( ADC0_CLK_P ), // 300 Mhz (or maybe 600 as specified in IP?)
                                          .adc0_clk_0_clk_n( ADC0_CLK_N ),
                                          .adc1_clk_0_clk_p( ADC2_CLK_P ),
                                          .adc1_clk_0_clk_n( ADC2_CLK_N ),
@@ -232,9 +232,9 @@ module zcu111_top(
                                          `CONNECT_AXI4S_MIN_IF( m30_axis_0_ , adc6_ ),
                                          `CONNECT_AXI4S_MIN_IF( m32_axis_0_ , adc7_ ),
                                          // my crap
-                                         .s_axi_aclk_0( aclk_div2 ),
+                                         .s_axi_aclk_0( aclk_div2 ), // Used for DACs  
                                          .s_axi_aresetn_0( 1'b1 ),
-                                         .s_axis_aclk_0( aclk ),
+                                         .s_axis_aclk_0( aclk ), // Used for ADCs
                                          .s_axis_aresetn_0( 1'b1 ),
                                          // feed back to inputs for the ADC Captures
                                          `CONNECT_AXI4S_MIN_IF( S_AXIS_0_ , adc0_ ),

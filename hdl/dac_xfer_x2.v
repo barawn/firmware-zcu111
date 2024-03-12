@@ -30,8 +30,14 @@ module dac_xfer_x2 #(parameter DWIDTH_IN=128,
         fast_clk_phase <= slow_clk_phase;
         capture_upper <= fast_clk_phase != fast_clk_phase_rereg;
         
-        if (!capture_upper) din_store <= s_axis_tdata;
-        if (capture_upper) dout <= { s_axis_tdata, din_store };
+
+        // if (!capture_upper) din_store <= s_axis_tdata;
+        // if (capture_upper) dout <= { s_axis_tdata, din_store };
+        // // Weird bit shift to see what happens
+        // if (!capture_upper) din_store <= {s_axis_tdata[125:0],2'b0};
+        // if (capture_upper) dout <= { s_axis_tdata[125:0],2'b0, din_store };
+        if (!capture_upper) din_store <= {{8{s_axis_tdata[15:0]}}};
+        if (capture_upper) dout <= {{8{s_axis_tdata[15:0]}}, din_store };
     end
     always @(posedge aclk_div2) begin
         slow_clk_phase <= ~slow_clk_phase;

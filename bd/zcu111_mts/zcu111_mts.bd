@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x26ABDC30B9DE7060",
+      "boundary_crc": "0x26ABDC30894F2CB2",
       "device": "xczu28dr-ffvg1517-2-e",
       "name": "zcu111_mts",
       "rev_ctrl_bd_flag": "RevCtrlBdOff",
@@ -12,24 +12,24 @@
     "design_tree": {
       "zynq_ultra_ps_e_0": "",
       "adc_cap_0": {
-        "adc_cap_x2_0": "",
         "axi_bram_ctrl_0": "",
-        "blk_mem_gen_0": ""
+        "blk_mem_gen_0": "",
+        "adc_cap_x2_0": ""
       },
       "adc_cap_1": {
-        "adc_cap_x2_0": "",
         "axi_bram_ctrl_0": "",
-        "blk_mem_gen_0": ""
+        "blk_mem_gen_0": "",
+        "adc_cap_x2_0": ""
       },
       "adc_cap_2": {
-        "adc_cap_x2_0": "",
         "axi_bram_ctrl_0": "",
-        "blk_mem_gen_0": ""
+        "blk_mem_gen_0": "",
+        "adc_cap_x2_0": ""
       },
       "adc_cap_3": {
-        "adc_cap_x2_0": "",
         "axi_bram_ctrl_0": "",
-        "blk_mem_gen_0": ""
+        "blk_mem_gen_0": "",
+        "adc_cap_x2_0": ""
       },
       "axi_smc": "",
       "debug_bridge_0": "",
@@ -4673,6 +4673,34 @@
           }
         },
         "components": {
+          "axi_bram_ctrl_0": {
+            "vlnv": "xilinx.com:ip:axi_bram_ctrl:4.1",
+            "xci_name": "zcu111_mts_axi_bram_ctrl_0_0",
+            "xci_path": "ip\\zcu111_mts_axi_bram_ctrl_0_0\\zcu111_mts_axi_bram_ctrl_0_0.xci",
+            "inst_hier_path": "adc_cap_0/axi_bram_ctrl_0",
+            "parameters": {
+              "DATA_WIDTH": {
+                "value": "256"
+              },
+              "SINGLE_PORT_BRAM": {
+                "value": "1"
+              }
+            }
+          },
+          "blk_mem_gen_0": {
+            "vlnv": "xilinx.com:ip:blk_mem_gen:8.4",
+            "xci_name": "zcu111_mts_blk_mem_gen_0_0",
+            "xci_path": "ip\\zcu111_mts_blk_mem_gen_0_0\\zcu111_mts_blk_mem_gen_0_0.xci",
+            "inst_hier_path": "adc_cap_0/blk_mem_gen_0",
+            "parameters": {
+              "Memory_Type": {
+                "value": "True_Dual_Port_RAM"
+              },
+              "PRIM_type_to_Implement": {
+                "value": "URAM"
+              }
+            }
+          },
           "adc_cap_x2_0": {
             "vlnv": "xilinx.com:module_ref:adc_cap_x2:1.0",
             "xci_name": "zcu111_mts_adc_cap_x2_0_0",
@@ -4875,34 +4903,6 @@
                 "direction": "O"
               }
             }
-          },
-          "axi_bram_ctrl_0": {
-            "vlnv": "xilinx.com:ip:axi_bram_ctrl:4.1",
-            "xci_name": "zcu111_mts_axi_bram_ctrl_0_0",
-            "xci_path": "ip\\zcu111_mts_axi_bram_ctrl_0_0\\zcu111_mts_axi_bram_ctrl_0_0.xci",
-            "inst_hier_path": "adc_cap_0/axi_bram_ctrl_0",
-            "parameters": {
-              "DATA_WIDTH": {
-                "value": "256"
-              },
-              "SINGLE_PORT_BRAM": {
-                "value": "1"
-              }
-            }
-          },
-          "blk_mem_gen_0": {
-            "vlnv": "xilinx.com:ip:blk_mem_gen:8.4",
-            "xci_name": "zcu111_mts_blk_mem_gen_0_0",
-            "xci_path": "ip\\zcu111_mts_blk_mem_gen_0_0\\zcu111_mts_blk_mem_gen_0_0.xci",
-            "inst_hier_path": "adc_cap_0/blk_mem_gen_0",
-            "parameters": {
-              "Memory_Type": {
-                "value": "True_Dual_Port_RAM"
-              },
-              "PRIM_type_to_Implement": {
-                "value": "URAM"
-              }
-            }
           }
         },
         "interface_nets": {
@@ -4959,8 +4959,8 @@
           "s_axi_aclk_0_1": {
             "ports": [
               "s_axi_aclk",
-              "adc_cap_x2_0/clk_i",
-              "axi_bram_ctrl_0/s_axi_aclk"
+              "axi_bram_ctrl_0/s_axi_aclk",
+              "adc_cap_x2_0/clk_i"
             ]
           },
           "s_axi_aresetn_0_1": {
@@ -5009,6 +5009,34 @@
           }
         },
         "components": {
+          "axi_bram_ctrl_0": {
+            "vlnv": "xilinx.com:ip:axi_bram_ctrl:4.1",
+            "xci_name": "zcu111_mts_axi_bram_ctrl_0_1",
+            "xci_path": "ip\\zcu111_mts_axi_bram_ctrl_0_1\\zcu111_mts_axi_bram_ctrl_0_1.xci",
+            "inst_hier_path": "adc_cap_1/axi_bram_ctrl_0",
+            "parameters": {
+              "DATA_WIDTH": {
+                "value": "256"
+              },
+              "SINGLE_PORT_BRAM": {
+                "value": "1"
+              }
+            }
+          },
+          "blk_mem_gen_0": {
+            "vlnv": "xilinx.com:ip:blk_mem_gen:8.4",
+            "xci_name": "zcu111_mts_blk_mem_gen_0_1",
+            "xci_path": "ip\\zcu111_mts_blk_mem_gen_0_1\\zcu111_mts_blk_mem_gen_0_1.xci",
+            "inst_hier_path": "adc_cap_1/blk_mem_gen_0",
+            "parameters": {
+              "Memory_Type": {
+                "value": "True_Dual_Port_RAM"
+              },
+              "PRIM_type_to_Implement": {
+                "value": "URAM"
+              }
+            }
+          },
           "adc_cap_x2_0": {
             "vlnv": "xilinx.com:module_ref:adc_cap_x2:1.0",
             "xci_name": "zcu111_mts_adc_cap_x2_0_1",
@@ -5206,34 +5234,6 @@
                 "direction": "O"
               }
             }
-          },
-          "axi_bram_ctrl_0": {
-            "vlnv": "xilinx.com:ip:axi_bram_ctrl:4.1",
-            "xci_name": "zcu111_mts_axi_bram_ctrl_0_1",
-            "xci_path": "ip\\zcu111_mts_axi_bram_ctrl_0_1\\zcu111_mts_axi_bram_ctrl_0_1.xci",
-            "inst_hier_path": "adc_cap_1/axi_bram_ctrl_0",
-            "parameters": {
-              "DATA_WIDTH": {
-                "value": "256"
-              },
-              "SINGLE_PORT_BRAM": {
-                "value": "1"
-              }
-            }
-          },
-          "blk_mem_gen_0": {
-            "vlnv": "xilinx.com:ip:blk_mem_gen:8.4",
-            "xci_name": "zcu111_mts_blk_mem_gen_0_1",
-            "xci_path": "ip\\zcu111_mts_blk_mem_gen_0_1\\zcu111_mts_blk_mem_gen_0_1.xci",
-            "inst_hier_path": "adc_cap_1/blk_mem_gen_0",
-            "parameters": {
-              "Memory_Type": {
-                "value": "True_Dual_Port_RAM"
-              },
-              "PRIM_type_to_Implement": {
-                "value": "URAM"
-              }
-            }
           }
         },
         "interface_nets": {
@@ -5290,8 +5290,8 @@
           "s_axi_aclk_0_1": {
             "ports": [
               "s_axi_aclk",
-              "adc_cap_x2_0/clk_i",
-              "axi_bram_ctrl_0/s_axi_aclk"
+              "axi_bram_ctrl_0/s_axi_aclk",
+              "adc_cap_x2_0/clk_i"
             ]
           },
           "s_axi_aresetn_0_1": {
@@ -5340,6 +5340,34 @@
           }
         },
         "components": {
+          "axi_bram_ctrl_0": {
+            "vlnv": "xilinx.com:ip:axi_bram_ctrl:4.1",
+            "xci_name": "zcu111_mts_axi_bram_ctrl_0_2",
+            "xci_path": "ip\\zcu111_mts_axi_bram_ctrl_0_2\\zcu111_mts_axi_bram_ctrl_0_2.xci",
+            "inst_hier_path": "adc_cap_2/axi_bram_ctrl_0",
+            "parameters": {
+              "DATA_WIDTH": {
+                "value": "256"
+              },
+              "SINGLE_PORT_BRAM": {
+                "value": "1"
+              }
+            }
+          },
+          "blk_mem_gen_0": {
+            "vlnv": "xilinx.com:ip:blk_mem_gen:8.4",
+            "xci_name": "zcu111_mts_blk_mem_gen_0_2",
+            "xci_path": "ip\\zcu111_mts_blk_mem_gen_0_2\\zcu111_mts_blk_mem_gen_0_2.xci",
+            "inst_hier_path": "adc_cap_2/blk_mem_gen_0",
+            "parameters": {
+              "Memory_Type": {
+                "value": "True_Dual_Port_RAM"
+              },
+              "PRIM_type_to_Implement": {
+                "value": "URAM"
+              }
+            }
+          },
           "adc_cap_x2_0": {
             "vlnv": "xilinx.com:module_ref:adc_cap_x2:1.0",
             "xci_name": "zcu111_mts_adc_cap_x2_0_2",
@@ -5537,34 +5565,6 @@
                 "direction": "O"
               }
             }
-          },
-          "axi_bram_ctrl_0": {
-            "vlnv": "xilinx.com:ip:axi_bram_ctrl:4.1",
-            "xci_name": "zcu111_mts_axi_bram_ctrl_0_2",
-            "xci_path": "ip\\zcu111_mts_axi_bram_ctrl_0_2\\zcu111_mts_axi_bram_ctrl_0_2.xci",
-            "inst_hier_path": "adc_cap_2/axi_bram_ctrl_0",
-            "parameters": {
-              "DATA_WIDTH": {
-                "value": "256"
-              },
-              "SINGLE_PORT_BRAM": {
-                "value": "1"
-              }
-            }
-          },
-          "blk_mem_gen_0": {
-            "vlnv": "xilinx.com:ip:blk_mem_gen:8.4",
-            "xci_name": "zcu111_mts_blk_mem_gen_0_2",
-            "xci_path": "ip\\zcu111_mts_blk_mem_gen_0_2\\zcu111_mts_blk_mem_gen_0_2.xci",
-            "inst_hier_path": "adc_cap_2/blk_mem_gen_0",
-            "parameters": {
-              "Memory_Type": {
-                "value": "True_Dual_Port_RAM"
-              },
-              "PRIM_type_to_Implement": {
-                "value": "URAM"
-              }
-            }
           }
         },
         "interface_nets": {
@@ -5621,8 +5621,8 @@
           "s_axi_aclk_0_1": {
             "ports": [
               "s_axi_aclk",
-              "adc_cap_x2_0/clk_i",
-              "axi_bram_ctrl_0/s_axi_aclk"
+              "axi_bram_ctrl_0/s_axi_aclk",
+              "adc_cap_x2_0/clk_i"
             ]
           },
           "s_axi_aresetn_0_1": {
@@ -5671,6 +5671,34 @@
           }
         },
         "components": {
+          "axi_bram_ctrl_0": {
+            "vlnv": "xilinx.com:ip:axi_bram_ctrl:4.1",
+            "xci_name": "zcu111_mts_axi_bram_ctrl_0_3",
+            "xci_path": "ip\\zcu111_mts_axi_bram_ctrl_0_3\\zcu111_mts_axi_bram_ctrl_0_3.xci",
+            "inst_hier_path": "adc_cap_3/axi_bram_ctrl_0",
+            "parameters": {
+              "DATA_WIDTH": {
+                "value": "256"
+              },
+              "SINGLE_PORT_BRAM": {
+                "value": "1"
+              }
+            }
+          },
+          "blk_mem_gen_0": {
+            "vlnv": "xilinx.com:ip:blk_mem_gen:8.4",
+            "xci_name": "zcu111_mts_blk_mem_gen_0_3",
+            "xci_path": "ip\\zcu111_mts_blk_mem_gen_0_3\\zcu111_mts_blk_mem_gen_0_3.xci",
+            "inst_hier_path": "adc_cap_3/blk_mem_gen_0",
+            "parameters": {
+              "Memory_Type": {
+                "value": "True_Dual_Port_RAM"
+              },
+              "PRIM_type_to_Implement": {
+                "value": "URAM"
+              }
+            }
+          },
           "adc_cap_x2_0": {
             "vlnv": "xilinx.com:module_ref:adc_cap_x2:1.0",
             "xci_name": "zcu111_mts_adc_cap_x2_0_3",
@@ -5868,34 +5896,6 @@
                 "direction": "O"
               }
             }
-          },
-          "axi_bram_ctrl_0": {
-            "vlnv": "xilinx.com:ip:axi_bram_ctrl:4.1",
-            "xci_name": "zcu111_mts_axi_bram_ctrl_0_3",
-            "xci_path": "ip\\zcu111_mts_axi_bram_ctrl_0_3\\zcu111_mts_axi_bram_ctrl_0_3.xci",
-            "inst_hier_path": "adc_cap_3/axi_bram_ctrl_0",
-            "parameters": {
-              "DATA_WIDTH": {
-                "value": "256"
-              },
-              "SINGLE_PORT_BRAM": {
-                "value": "1"
-              }
-            }
-          },
-          "blk_mem_gen_0": {
-            "vlnv": "xilinx.com:ip:blk_mem_gen:8.4",
-            "xci_name": "zcu111_mts_blk_mem_gen_0_3",
-            "xci_path": "ip\\zcu111_mts_blk_mem_gen_0_3\\zcu111_mts_blk_mem_gen_0_3.xci",
-            "inst_hier_path": "adc_cap_3/blk_mem_gen_0",
-            "parameters": {
-              "Memory_Type": {
-                "value": "True_Dual_Port_RAM"
-              },
-              "PRIM_type_to_Implement": {
-                "value": "URAM"
-              }
-            }
           }
         },
         "interface_nets": {
@@ -5952,8 +5952,8 @@
           "s_axi_aclk_0_1": {
             "ports": [
               "s_axi_aclk",
-              "adc_cap_x2_0/clk_i",
-              "axi_bram_ctrl_0/s_axi_aclk"
+              "axi_bram_ctrl_0/s_axi_aclk",
+              "adc_cap_x2_0/clk_i"
             ]
           },
           "s_axi_aresetn_0_1": {
@@ -6822,6 +6822,12 @@
           },
           "DAC1_Sampling_Rate": {
             "value": "3"
+          },
+          "DAC_Data_Width12": {
+            "value": "16"
+          },
+          "DAC_Data_Width13": {
+            "value": "16"
           },
           "DAC_Slice00_Enable": {
             "value": "false"
