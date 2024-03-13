@@ -80,6 +80,15 @@ module zcu111_top(
     `DEFINE_AXI4S_MIN_IF( dac6_ , 256 );
     `DEFINE_AXI4S_MIN_IF( dac7_ , 256 );
     
+    // For LPF
+    // `DEFINE_AXI4S_MIN_IF( lpf6_ , 16 );
+    wire [15:0] lpf6_tdata;
+    wire lpf6_tvalid;
+    wire lpf6_tready;
+    wire [15:0] lpf7_tdata;
+    wire lpf7_tvalid;
+    wire lpf7_tready;
+    // `DEFINE_AXI4S_MIN_IF( lpf7_ , 16 );
     
     // SYSREF capture register
     (* IOB = "TRUE" *)
@@ -87,6 +96,7 @@ module zcu111_top(
     reg sysref_reg = 0;
     // output clock (187.5 MHz, unused)
     wire adc_clk;
+
     
     // The block comment section below appears to be all debugging
         /*
@@ -171,11 +181,29 @@ module zcu111_top(
     
     generate
          if (THIS_DESIGN == "MTS") begin : MTS
+
+            lpf_10t30MHz lpf6 (
+                .aclk(aclk),                              // input wire aclk
+                .s_axis_data_tvalid(lpf6_tvalid),  // input wire s_axis_data_tvalid
+                .s_axis_data_tready(lpf6_tready),  // output wire s_axis_data_tready
+                .s_axis_data_tdata(lpf6_tdata),    // input wire [15 : 0] s_axis_data_tdata
+                .m_axis_data_tvalid(adc0_tvalid),  // output wire m_axis_data_tvalid
+                .m_axis_data_tdata(adc0_tdata[15:0])    // output wire [15 : 0] m_axis_data_tdata
+                );
+
+            lpf_10t30MHz lpf7 (
+                .aclk(aclk),                              // input wire aclk
+                .s_axis_data_tvalid(lpf7_tvalid),  // input wire s_axis_data_tvalid
+                .s_axis_data_tready(lpf7_tready),  // output wire s_axis_data_tready
+                .s_axis_data_tdata(lpf7_tdata),    // input wire [15 : 0] s_axis_data_tdata
+                .m_axis_data_tvalid(adc1_tvalid),  // output wire m_axis_data_tvalid
+                .m_axis_data_tdata(adc1_tdata[15:0])    // output wire [15 : 0] m_axis_data_tdata
+                );
+
             // These two dac_xfer_x2 modules connect:
             // RF Data Converter ADC AXI4 stream ->
             // dac_xfer module, which stacks two 128 data into one 256 ->
             // RF Data Converter DAC AXI4 stream
-            // Lucas: I AM SWAPPING DAC 6<->7 for testing
             dac_xfer_x2 u_dac12_xfer( .aclk(aclk),
                                       .aresetn(1'b1),
                                       .aclk_div2(aclk_div2),
@@ -221,15 +249,14 @@ module zcu111_top(
                                          .vin3_23_0_v_p( ADC7_VIN_P ),
                                          .vin3_23_0_v_n( ADC7_VIN_N ),
                                          // AXI stream *outputs*
-                                         // These are the ADC values, fed back into the block diagram
-                                         // These inputs are sent to the ADC captures
-                                         `CONNECT_AXI4S_MIN_IF( m00_axis_0_ , adc0_ ),
-                                         `CONNECT_AXI4S_MIN_IF( m02_axis_0_ , adc1_ ),
+                                         // These are the ADC values
+                                         `CONNECT_AXI4S_MIN_IF( m00_axis_0_ , lpf6_ ),
+                                         `CONNECT_AXI4S_MIN_IF( m02_axis_0_ , lpf7_ ),
                                          `CONNECT_AXI4S_MIN_IF( m10_axis_0_ , adc2_ ),
                                          `CONNECT_AXI4S_MIN_IF( m12_axis_0_ , adc3_ ),
                                          `CONNECT_AXI4S_MIN_IF( m20_axis_0_ , adc4_ ),
                                          `CONNECT_AXI4S_MIN_IF( m22_axis_0_ , adc5_ ),
-                                         `CONNECT_AXI4S_MIN_IF( m30_axis_0_ , adc6_ ),
+                                         `CONNECT_AXI4S_MIN_IF( m30_axis_0_ , adc6_ ),// changed from adc6_
                                          `CONNECT_AXI4S_MIN_IF( m32_axis_0_ , adc7_ ),
                                          // my crap
                                          .s_axi_aclk_0( aclk_div2 ), // Used for DACs  
