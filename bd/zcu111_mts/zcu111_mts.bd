@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x26ABDC30894F2CB2",
+      "boundary_crc": "0xC90667B726E95C2B",
       "device": "xczu28dr-ffvg1517-2-e",
       "name": "zcu111_mts",
       "rev_ctrl_bd_flag": "RevCtrlBdOff",
@@ -1337,6 +1337,166 @@
             "direction": "O"
           }
         }
+      },
+      "s10_axis_0": {
+        "mode": "Slave",
+        "vlnv_bus_definition": "xilinx.com:interface:axis:1.0",
+        "vlnv": "xilinx.com:interface:axis_rtl:1.0",
+        "parameters": {
+          "CLK_DOMAIN": {
+            "value": "zcu111_mts_s_axi_aclk_0",
+            "value_src": "default"
+          },
+          "FREQ_HZ": {
+            "value": "187500000"
+          },
+          "HAS_TKEEP": {
+            "value": "0"
+          },
+          "HAS_TLAST": {
+            "value": "0"
+          },
+          "HAS_TREADY": {
+            "value": "1"
+          },
+          "HAS_TSTRB": {
+            "value": "0"
+          },
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "LAYERED_METADATA": {
+            "value": "undef"
+          },
+          "PHASE": {
+            "value": "0.0",
+            "value_src": "default"
+          },
+          "TDATA_NUM_BYTES": {
+            "value": "32"
+          },
+          "TDEST_WIDTH": {
+            "value": "0"
+          },
+          "TID_WIDTH": {
+            "value": "0"
+          },
+          "TUSER_WIDTH": {
+            "value": "0"
+          }
+        },
+        "port_maps": {
+          "TDATA": {
+            "physical_name": "s10_axis_0_tdata",
+            "direction": "I",
+            "left": "255",
+            "right": "0"
+          },
+          "TREADY": {
+            "physical_name": "s10_axis_0_tready",
+            "direction": "O"
+          },
+          "TVALID": {
+            "physical_name": "s10_axis_0_tvalid",
+            "direction": "I"
+          }
+        }
+      },
+      "s11_axis_0": {
+        "mode": "Slave",
+        "vlnv_bus_definition": "xilinx.com:interface:axis:1.0",
+        "vlnv": "xilinx.com:interface:axis_rtl:1.0",
+        "parameters": {
+          "CLK_DOMAIN": {
+            "value": "zcu111_mts_s_axi_aclk_0",
+            "value_src": "default"
+          },
+          "FREQ_HZ": {
+            "value": "187500000"
+          },
+          "HAS_TKEEP": {
+            "value": "0"
+          },
+          "HAS_TLAST": {
+            "value": "0"
+          },
+          "HAS_TREADY": {
+            "value": "1"
+          },
+          "HAS_TSTRB": {
+            "value": "0"
+          },
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "LAYERED_METADATA": {
+            "value": "undef"
+          },
+          "PHASE": {
+            "value": "0.0",
+            "value_src": "default"
+          },
+          "TDATA_NUM_BYTES": {
+            "value": "32"
+          },
+          "TDEST_WIDTH": {
+            "value": "0"
+          },
+          "TID_WIDTH": {
+            "value": "0"
+          },
+          "TUSER_WIDTH": {
+            "value": "0"
+          }
+        },
+        "port_maps": {
+          "TDATA": {
+            "physical_name": "s11_axis_0_tdata",
+            "direction": "I",
+            "left": "255",
+            "right": "0"
+          },
+          "TREADY": {
+            "physical_name": "s11_axis_0_tready",
+            "direction": "O"
+          },
+          "TVALID": {
+            "physical_name": "s11_axis_0_tvalid",
+            "direction": "I"
+          }
+        }
+      },
+      "vout10_0": {
+        "mode": "Master",
+        "vlnv_bus_definition": "xilinx.com:interface:diff_analog_io:1.0",
+        "vlnv": "xilinx.com:interface:diff_analog_io_rtl:1.0",
+        "port_maps": {
+          "V_N": {
+            "physical_name": "vout10_0_v_n",
+            "direction": "O"
+          },
+          "V_P": {
+            "physical_name": "vout10_0_v_p",
+            "direction": "O"
+          }
+        }
+      },
+      "vout11_0": {
+        "mode": "Master",
+        "vlnv_bus_definition": "xilinx.com:interface:diff_analog_io:1.0",
+        "vlnv": "xilinx.com:interface:diff_analog_io_rtl:1.0",
+        "port_maps": {
+          "V_N": {
+            "physical_name": "vout11_0_v_n",
+            "direction": "O"
+          },
+          "V_P": {
+            "physical_name": "vout11_0_v_p",
+            "direction": "O"
+          }
+        }
       }
     },
     "ports": {
@@ -1411,7 +1571,7 @@
         "direction": "I",
         "parameters": {
           "ASSOCIATED_BUSIF": {
-            "value": "s12_axis_0:s13_axis_0",
+            "value": "s12_axis_0:s13_axis_0:s10_axis_0:s11_axis_0",
             "value_src": "default"
           },
           "ASSOCIATED_RESET": {
@@ -6832,6 +6992,12 @@
           "DAC_Slice00_Enable": {
             "value": "false"
           },
+          "DAC_Slice10_Enable": {
+            "value": "true"
+          },
+          "DAC_Slice11_Enable": {
+            "value": "true"
+          },
           "DAC_Slice12_Enable": {
             "value": "true"
           },
@@ -7025,6 +7191,18 @@
           "ps8_0_axi_periph/M02_AXI"
         ]
       },
+      "s10_axis_0_1": {
+        "interface_ports": [
+          "s10_axis_0",
+          "usp_rf_data_converter_0/s10_axis"
+        ]
+      },
+      "s11_axis_0_1": {
+        "interface_ports": [
+          "s11_axis_0",
+          "usp_rf_data_converter_0/s11_axis"
+        ]
+      },
       "s12_axis_0_1": {
         "interface_ports": [
           "s12_axis_0",
@@ -7089,6 +7267,18 @@
         "interface_ports": [
           "m32_axis_0",
           "usp_rf_data_converter_0/m32_axis"
+        ]
+      },
+      "usp_rf_data_converter_0_vout10": {
+        "interface_ports": [
+          "vout10_0",
+          "usp_rf_data_converter_0/vout10"
+        ]
+      },
+      "usp_rf_data_converter_0_vout11": {
+        "interface_ports": [
+          "vout11_0",
+          "usp_rf_data_converter_0/vout11"
         ]
       },
       "usp_rf_data_converter_0_vout12": {

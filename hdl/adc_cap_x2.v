@@ -79,13 +79,13 @@ module adc_cap_x2 #(parameter DWIDTH_IN = 128,
         capture_upper <= fast_clk_phase != fast_clk_phase_rereg;
         
         // {8{s_axis_tdata[16:0]}}
-        if (!capture_upper) din_store <= {8{s_axis_tdata[15:0]}};
-        // if (!capture_upper) din_store <= s_axis_tdata;
+        // if (!capture_upper) din_store <= {8{s_axis_tdata[15:0]}};
+        if (!capture_upper) din_store <= s_axis_tdata;
 
         // dout is only captured every other clock, so its data is stable
         // in the clk_div2 regime
-        if (capture_upper) dout <= { {8{s_axis_tdata[15:0]}}, din_store };
-        // if (capture_upper) dout <= { s_axis_tdata, din_store };
+        // if (capture_upper) dout <= { {8{s_axis_tdata[15:0]}}, din_store };
+        if (capture_upper) dout <= { s_axis_tdata, din_store };
     end
     
     always @(posedge clk_i) begin

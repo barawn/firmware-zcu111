@@ -37,6 +37,10 @@ module zcu111_top(
 
         input DAC4_CLK_P,       // N5
         input DAC4_CLK_N,       // N4
+        output DAC4_VOUT_P,     // J2
+        output DAC4_VOUT_N,     // J1
+        output DAC5_VOUT_P,     // G2
+        output DAC5_VOUT_N,     // G1
         output DAC6_VOUT_P,     // E2
         output DAC6_VOUT_N,     // E1
         output DAC7_VOUT_P,     // C2
@@ -53,7 +57,7 @@ module zcu111_top(
         output [1:0] PL_USER_LED        // { AP13, AR13 }
     );
 
-   parameter	     THIS_DESIGN = "MTS";
+   parameter	     THIS_DESIGN = "LPF";
    
     
     (* KEEP = "TRUE"  *)
@@ -76,18 +80,29 @@ module zcu111_top(
     `DEFINE_AXI4S_MIN_IF( adc5_ , 128 );
     `DEFINE_AXI4S_MIN_IF( adc6_ , 128 );
     `DEFINE_AXI4S_MIN_IF( adc7_ , 128 );
+    // LPF AXI4 Stream
+    `DEFINE_AXI4S_MIN_IF( lpf0_ , 128 );
+    `DEFINE_AXI4S_MIN_IF( lpf1_ , 128 );
+    `DEFINE_AXI4S_MIN_IF( lpf2_ , 128 );
+    `DEFINE_AXI4S_MIN_IF( lpf3_ , 128 );
+    `DEFINE_AXI4S_MIN_IF( lpf4_ , 128 );
+    `DEFINE_AXI4S_MIN_IF( lpf5_ , 128 );
+    `DEFINE_AXI4S_MIN_IF( lpf6_ , 128 );
+    `DEFINE_AXI4S_MIN_IF( lpf7_ , 128 );
     // DAC AXI4 Stream
     `DEFINE_AXI4S_MIN_IF( dac6_ , 256 );
     `DEFINE_AXI4S_MIN_IF( dac7_ , 256 );
+    `DEFINE_AXI4S_MIN_IF( dac4_ , 256 );
+    `DEFINE_AXI4S_MIN_IF( dac5_ , 256 );
     
     // For LPF
     // `DEFINE_AXI4S_MIN_IF( lpf6_ , 16 );
-    wire [15:0] lpf6_tdata;
-    wire lpf6_tvalid;
-    wire lpf6_tready;
-    wire [15:0] lpf7_tdata;
-    wire lpf7_tvalid;
-    wire lpf7_tready;
+    // wire [127:0] lpf6_tdata;
+    // wire lpf6_tvalid;
+    // wire lpf6_tready;
+    // wire [127:0] lpf7_tdata;
+    // wire lpf7_tvalid;
+    // wire lpf7_tready;
     // `DEFINE_AXI4S_MIN_IF( lpf7_ , 16 );
     
     // SYSREF capture register
@@ -180,25 +195,80 @@ module zcu111_top(
     always @(posedge aclk) sysref_reg <= sysref_reg_slowclk;
     
     generate
-         if (THIS_DESIGN == "MTS") begin : MTS
+         if (THIS_DESIGN == "LPF") begin : LPF
 
-            lpf_10t30MHz lpf6 (
+            // lpf_10t30MHz lpf6 (
+            //     .aclk(aclk),                              // input wire aclk
+            //     .s_axis_data_tvalid(lpf6_tvalid),  // input wire s_axis_data_tvalid
+            //     .s_axis_data_tready(lpf6_tready),  // output wire s_axis_data_tready
+            //     .s_axis_data_tdata(lpf6_tdata[15:0]),    // input wire [15 : 0] s_axis_data_tdata
+            //     .m_axis_data_tvalid(adc0_tvalid),  // output wire m_axis_data_tvalid
+            //     .m_axis_data_tdata(adc0_tdata[15:0])    // output wire [15 : 0] m_axis_data_tdata
+            //     );
+
+            // lpf_10t30MHz lpf7 (
+            //     .aclk(aclk),                              // input wire aclk
+            //     .s_axis_data_tvalid(lpf7_tvalid),  // input wire s_axis_data_tvalid
+            //     .s_axis_data_tready(lpf7_tready),  // output wire s_axis_data_tready
+            //     .s_axis_data_tdata(lpf7_tdata[15:0]),    // input wire [15 : 0] s_axis_data_tdata
+            //     .m_axis_data_tvalid(adc1_tvalid),  // output wire m_axis_data_tvalid
+            //     .m_axis_data_tdata(adc1_tdata[15:0])    // output wire [15 : 0] m_axis_data_tdata
+            //     );
+
+            fir_full_speed fir_full_0 (
                 .aclk(aclk),                              // input wire aclk
-                .s_axis_data_tvalid(lpf6_tvalid),  // input wire s_axis_data_tvalid
-                .s_axis_data_tready(lpf6_tready),  // output wire s_axis_data_tready
-                .s_axis_data_tdata(lpf6_tdata),    // input wire [15 : 0] s_axis_data_tdata
-                .m_axis_data_tvalid(adc0_tvalid),  // output wire m_axis_data_tvalid
-                .m_axis_data_tdata(adc0_tdata[15:0])    // output wire [15 : 0] m_axis_data_tdata
+                `CONNECT_AXI4S_MIN_IF( s_axis_data_ , lpf0_ ),
+                `CONNECT_AXI4S_MIN_IF( m_axis_data_ , adc0_ )
                 );
 
-            lpf_10t30MHz lpf7 (
+            fir_full_speed fir_full_1 (
                 .aclk(aclk),                              // input wire aclk
-                .s_axis_data_tvalid(lpf7_tvalid),  // input wire s_axis_data_tvalid
-                .s_axis_data_tready(lpf7_tready),  // output wire s_axis_data_tready
-                .s_axis_data_tdata(lpf7_tdata),    // input wire [15 : 0] s_axis_data_tdata
-                .m_axis_data_tvalid(adc1_tvalid),  // output wire m_axis_data_tvalid
-                .m_axis_data_tdata(adc1_tdata[15:0])    // output wire [15 : 0] m_axis_data_tdata
+                `CONNECT_AXI4S_MIN_IF( s_axis_data_ , lpf1_ ),
+                `CONNECT_AXI4S_MIN_IF( m_axis_data_ , adc1_ )
                 );
+
+            fir_full_speed fir_full_2 (
+                .aclk(aclk),                              // input wire aclk
+                `CONNECT_AXI4S_MIN_IF( s_axis_data_ , lpf2_ ),
+                `CONNECT_AXI4S_MIN_IF( m_axis_data_ , adc2_ )
+                );
+
+            fir_full_speed fir_full_3 (
+                .aclk(aclk),                              // input wire aclk
+                `CONNECT_AXI4S_MIN_IF( s_axis_data_ , lpf3_ ),
+                `CONNECT_AXI4S_MIN_IF( m_axis_data_ , adc3_ )
+                );
+
+
+            // fir_full_speed fir_full_1 (
+            //     .aclk(aclk),                              // input wire aclk
+            //     .s_axis_data_tvalid(lpf1_tvalid),  // input wire s_axis_data_tvalid
+            //     .s_axis_data_tready(lpf1_tready),  // output wire s_axis_data_tready
+            //     .s_axis_data_tdata(lpf1_tdata),    // input wire [127 : 0] s_axis_data_tdata
+            //     .m_axis_data_tvalid(adc1_tvalid),  // output wire m_axis_data_tvalid
+            //     .m_axis_data_tdata(adc1_tdata)    // output wire [127 : 0] m_axis_data_tdata
+            //     );
+
+            // fir_full_speed fir_full_2 (
+            //     .aclk(aclk),                              // input wire aclk
+            //     .s_axis_data_tvalid(lpf2_tvalid),  // input wire s_axis_data_tvalid
+            //     .s_axis_data_tready(lpf2_tready),  // output wire s_axis_data_tready
+            //     .s_axis_data_tdata(lpf2_tdata),    // input wire [127 : 0] s_axis_data_tdata
+            //     .m_axis_data_tvalid(adc2_tvalid),  // output wire m_axis_data_tvalid
+            //     .m_axis_data_tdata(adc2_tdata)    // output wire [127 : 0] m_axis_data_tdata
+            //     );
+
+            // fir_full_speed fir_full_3 (
+            //     .aclk(aclk),                              // input wire aclk
+            //     .s_axis_data_tvalid(lpf3_tvalid),  // input wire s_axis_data_tvalid
+            //     .s_axis_data_tready(lpf3_tready),  // output wire s_axis_data_tready
+            //     .s_axis_data_tdata(lpf3_tdata),    // input wire [127 : 0] s_axis_data_tdata
+            //     .m_axis_data_tvalid(adc3_tvalid),  // output wire m_axis_data_tvalid
+            //     .m_axis_data_tdata(adc3_tdata)    // output wire [127 : 0] m_axis_data_tdata
+            //     );
+
+                
+
 
             // These two dac_xfer_x2 modules connect:
             // RF Data Converter ADC AXI4 stream ->
@@ -207,13 +277,25 @@ module zcu111_top(
             dac_xfer_x2 u_dac12_xfer( .aclk(aclk),
                                       .aresetn(1'b1),
                                       .aclk_div2(aclk_div2),
-                                      `CONNECT_AXI4S_MIN_IF( s_axis_ , adc0_ ),
-                                      `CONNECT_AXI4S_MIN_IF( m_axis_ , dac6_ ));
+                                      `CONNECT_AXI4S_MIN_IF( s_axis_ , adc0_ ),// CHANGED FROM 0 1 2 3
+                                      `CONNECT_AXI4S_MIN_IF( m_axis_ , dac6_ )); 
             dac_xfer_x2 u_dac13_xfer( .aclk(aclk),
                                       .aresetn(1'b1),
                                       .aclk_div2(aclk_div2),
                                       `CONNECT_AXI4S_MIN_IF( s_axis_ , adc1_ ),
                                       `CONNECT_AXI4S_MIN_IF( m_axis_ , dac7_ ));
+            dac_xfer_x2 u_dac10_xfer( .aclk(aclk),
+                                      .aresetn(1'b1),
+                                      .aclk_div2(aclk_div2),
+                                      `CONNECT_AXI4S_MIN_IF( s_axis_ , adc2_ ),
+                                      `CONNECT_AXI4S_MIN_IF( m_axis_ , dac4_ ));
+            dac_xfer_x2 u_dac11_xfer( .aclk(aclk),
+                                      .aresetn(1'b1),
+                                      .aclk_div2(aclk_div2),
+                                      `CONNECT_AXI4S_MIN_IF( s_axis_ , adc3_ ),
+                                      `CONNECT_AXI4S_MIN_IF( m_axis_ , dac5_ ));
+
+                        
 
             // This is the block diagram's (zcu111_mts's) wrapper.
             // The RF Data Converter IP is inside it, and is communicated with over AXI4 Stream interfaces                     
@@ -250,10 +332,10 @@ module zcu111_top(
                                          .vin3_23_0_v_n( ADC7_VIN_N ),
                                          // AXI stream *outputs*
                                          // These are the ADC values
-                                         `CONNECT_AXI4S_MIN_IF( m00_axis_0_ , lpf6_ ),
-                                         `CONNECT_AXI4S_MIN_IF( m02_axis_0_ , lpf7_ ),
-                                         `CONNECT_AXI4S_MIN_IF( m10_axis_0_ , adc2_ ),
-                                         `CONNECT_AXI4S_MIN_IF( m12_axis_0_ , adc3_ ),
+                                         `CONNECT_AXI4S_MIN_IF( m00_axis_0_ , lpf0_ ),
+                                         `CONNECT_AXI4S_MIN_IF( m02_axis_0_ , lpf1_ ),
+                                         `CONNECT_AXI4S_MIN_IF( m10_axis_0_ , lpf2_ ),
+                                         `CONNECT_AXI4S_MIN_IF( m12_axis_0_ , lpf3_ ),
                                          `CONNECT_AXI4S_MIN_IF( m20_axis_0_ , adc4_ ),
                                          `CONNECT_AXI4S_MIN_IF( m22_axis_0_ , adc5_ ),
                                          `CONNECT_AXI4S_MIN_IF( m30_axis_0_ , adc6_ ),// changed from adc6_
@@ -274,11 +356,18 @@ module zcu111_top(
                                          
                                          //Swapping these for testing does nothing
                                          //This is likely because they are hardwired
+                                         .vout10_0_v_p(DAC4_VOUT_P),
+                                         .vout10_0_v_n(DAC4_VOUT_N),
+                                         .vout11_0_v_p(DAC5_VOUT_P),
+                                         .vout11_0_v_n(DAC5_VOUT_N),
                                          .vout12_0_v_p(DAC6_VOUT_P),
                                          .vout12_0_v_n(DAC6_VOUT_N),
                                          .vout13_0_v_p(DAC7_VOUT_P),
                                          .vout13_0_v_n(DAC7_VOUT_N),
                                          
+                                        
+                                         `CONNECT_AXI4S_MIN_IF( s10_axis_0_ , dac4_ ),
+                                         `CONNECT_AXI4S_MIN_IF( s11_axis_0_ , dac5_ ),
                                          `CONNECT_AXI4S_MIN_IF( s12_axis_0_ , dac6_ ),
                                          `CONNECT_AXI4S_MIN_IF( s13_axis_0_ , dac7_ ),
 

@@ -63,6 +63,12 @@ module zcu111_mts_wrapper
     // dac stuff. These are in the div2 clock domain
     dac1_clk_0_clk_p,
     dac1_clk_0_clk_n,
+    s10_axis_0_tdata,
+    s10_axis_0_tready,
+    s10_axis_0_tvalid,
+    s11_axis_0_tdata,
+    s11_axis_0_tready,
+    s11_axis_0_tvalid,
     s12_axis_0_tdata,
     s12_axis_0_tready,
     s12_axis_0_tvalid,
@@ -95,6 +101,10 @@ module zcu111_mts_wrapper
     vin3_23_0_v_n,
     vin3_23_0_v_p,
     // dac
+    vout10_0_v_p,
+    vout10_0_v_n,
+    vout11_0_v_p,
+    vout11_0_v_n,
     vout12_0_v_p,
     vout12_0_v_n,
     vout13_0_v_p,
@@ -180,13 +190,23 @@ module zcu111_mts_wrapper
   input dac1_clk_0_clk_p;
   input dac1_clk_0_clk_n;
   
+  input [255:0] s10_axis_0_tdata;
+  input         s10_axis_0_tvalid;
+  output        s10_axis_0_tready;
+  input [255:0] s11_axis_0_tdata;
+  input         s11_axis_0_tvalid;
+  output        s11_axis_0_tready;
   input [255:0] s12_axis_0_tdata;
   input         s12_axis_0_tvalid;
   output        s12_axis_0_tready;
   input [255:0] s13_axis_0_tdata;
   input         s13_axis_0_tvalid;
   output        s13_axis_0_tready;
-  
+
+  output vout10_0_v_p;
+  output vout10_0_v_n;
+  output vout11_0_v_p;
+  output vout11_0_v_n;
   output vout12_0_v_p;
   output vout12_0_v_n;
   output vout13_0_v_p;
@@ -338,10 +358,20 @@ module zcu111_mts_wrapper
         .pl_resetn0(pl_resetn0),
         .dac1_clk_0_clk_p(dac1_clk_0_clk_p),
         .dac1_clk_0_clk_n(dac1_clk_0_clk_n),
+        .vout10_0_v_p(vout10_0_v_p),
+        .vout10_0_v_n(vout10_0_v_n),
+        .vout11_0_v_p(vout11_0_v_p),
+        .vout11_0_v_n(vout11_0_v_n),
         .vout12_0_v_p(vout12_0_v_p),
         .vout12_0_v_n(vout12_0_v_n),
         .vout13_0_v_p(vout13_0_v_p),
         .vout13_0_v_n(vout13_0_v_n),
+        .s10_axis_0_tdata(s10_axis_0_tdata),
+        .s10_axis_0_tvalid(s10_axis_0_tvalid),
+        .s10_axis_0_tready(s10_axis_0_tready),
+        .s11_axis_0_tdata(s11_axis_0_tdata),
+        .s11_axis_0_tvalid(s11_axis_0_tvalid),
+        .s11_axis_0_tready(s11_axis_0_tready),
         .s12_axis_0_tdata(s12_axis_0_tdata),
         .s12_axis_0_tvalid(s12_axis_0_tvalid),
         .s12_axis_0_tready(s12_axis_0_tready),
