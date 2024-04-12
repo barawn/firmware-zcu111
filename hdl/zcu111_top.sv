@@ -57,7 +57,7 @@ module zcu111_top(
         output [1:0] PL_USER_LED        // { AP13, AR13 }
     );
 
-   parameter	     THIS_DESIGN = "LPF";
+    parameter	     THIS_DESIGN = "LPF";
    
     
     (* KEEP = "TRUE"  *)
@@ -82,7 +82,11 @@ module zcu111_top(
     `DEFINE_AXI4S_MIN_IF( adc7_ , 128 );
     // LPF AXI4 Stream
     `DEFINE_AXI4S_MIN_IF( lpf0_ , 128 );
+    wire lpf0copy_tready; // for ADC captures
+    wire lpf0copy_tvalid;
     `DEFINE_AXI4S_MIN_IF( lpf1_ , 128 );
+    wire lpf1copy_tready;
+    wire lpf1copy_tvalid;
     `DEFINE_AXI4S_MIN_IF( lpf2_ , 128 );
     `DEFINE_AXI4S_MIN_IF( lpf3_ , 128 );
     `DEFINE_AXI4S_MIN_IF( lpf4_ , 128 );
@@ -94,7 +98,8 @@ module zcu111_top(
     `DEFINE_AXI4S_MIN_IF( dac7_ , 256 );
     `DEFINE_AXI4S_MIN_IF( dac4_ , 256 );
     `DEFINE_AXI4S_MIN_IF( dac5_ , 256 );
-    
+
+
     // For LPF
     // `DEFINE_AXI4S_MIN_IF( lpf6_ , 16 );
     // wire [127:0] lpf6_tdata;
@@ -194,6 +199,7 @@ module zcu111_top(
     always @(posedge ref_clk) sysref_reg_slowclk <= sys_ref;
     always @(posedge aclk) sysref_reg <= sysref_reg_slowclk;
     
+    genvar i;
     generate
          if (THIS_DESIGN == "LPF") begin : LPF
 
@@ -215,17 +221,102 @@ module zcu111_top(
             //     .m_axis_data_tdata(adc1_tdata[15:0])    // output wire [15 : 0] m_axis_data_tdata
             //     );
 
-            fir_full_speed fir_full_0 (
-                .aclk(aclk),                              // input wire aclk
-                `CONNECT_AXI4S_MIN_IF( s_axis_data_ , lpf0_ ),
-                `CONNECT_AXI4S_MIN_IF( m_axis_data_ , adc0_ )
+
+
+            // shannon_whitaker_lpfull_v2 #(.NBITS(16),.NSAMPS(8),.OUTQ_INT(16), .OUTQ_FRAC(0)) fir_full_0 (
+            //     .clk_i(aclk),
+            //     .in_i(lpf0_tdata),
+            //     .out_o(adc0_tdata)
+            //     );
+    
+            wire [95:0] lpf0_compressed;
+            wire [95:0] adc0_compressed;    
+            // CHANNEL 0 MSB aligned
+            for(i=0; i<8; i=i+1)
+                begin: bitRepack0
+                    assign lpf0_compressed[i*12+11:i*12] = lpf0_tdata[i*16+15:i*16+4]; // Slice out most significant 12 out of 16.
+                    // assign lpf0_compressed[(7-i)*12+11:(7-i)*12] = lpf0_tdata[i*16+15:i*16+4]; // Slice out most significant 12 out of 16, and align to least
+
+                end
+
+            for(i=0; i<8; i=i+1)
+                begin: bitUnpack0
+                    assign adc0_tdata[i*16+15:i*16] =  {{adc0_compressed[i*12+11:i*12]}, {4{1'b0}}}; // MSB aligned
+                    // assign adc0_tdata[(7-i)*16+15:(7-i)*16] =  {{adc0_compressed[i*12+11:i*12]}, {4{1'b0}}}; // LSB aligned
+                end
+
+            wire [127:0] lpf1_compressed;
+            wire [127:0] adc1_compressed;
+            // CHANNEL 1 LSB aligned
+            //
+            for(i=0; i<8; i=i+1)
+                begin: bitRepack1
+                    assign lpf1_compressed[i*16+11:i*16] = {{4{1'b0}}, {lpf1_tdata[i*16+15:i*16+4]}}; // Slice out most significant 12 out of 16, and align to least
+                    // reverse the order of the words
+                    // assign lpf1_compressed[(7-i)*16+11:(7-i)*16] = {{4{1'b0}}, {lpf1_tdata[i*16+15:i*16+4]}}; // Slice out most significant 12 out of 16, and align to least
+                end
+
+            for(i=0; i<8; i=i+1)
+                begin: bitUnpack1
+                    assign adc1_tdata[i*16+15:i*16] =  {{adc1_compressed[i*16+11:i*16]}, {4{1'b0}}}; // LSB aligned
+                    // reverse the word order (again)
+                    // assign adc1_tdata[(7-i)*16+15:(7-i)*16] =  {{adc1_compressed[i*16+11:i*16]}, {4{1'b0}}}; // LSB aligned
+                end
+
+            assign lpf1copy_tvalid = 1'b1;
+            fir_compiler_lpf_copy fir_full_1 ( // This is 12 bits wide
+                .aclk(aclk),         
+                .s_axis_data_tvalid(lpf1copy_tvalid),
+                .s_axis_data_tready(lpf1copy_tready),  
+                .s_axis_data_tdata(lpf1_compressed),
+                .m_axis_data_tvalid(adc1_tvalid),  
+                .m_axis_data_tdata(adc1_compressed),
+                .m_axis_data_tready(adc1_tready)
+                // `CONNECT_AXI4S_MIN_IF( s_axis_data_ , lpf1_ ),
+                // `CONNECT_AXI4S_MIN_IF( m_axis_data_ , adc1_ )
                 );
 
-            fir_full_speed fir_full_1 (
-                .aclk(aclk),                              // input wire aclk
-                `CONNECT_AXI4S_MIN_IF( s_axis_data_ , lpf1_ ),
-                `CONNECT_AXI4S_MIN_IF( m_axis_data_ , adc1_ )
+
+            // wire [127:0] lpf1_compressed;
+            // wire [127:0] adc1_compressed;
+
+
+
+
+
+            // wire [95:0] lpf1_compressed;
+            // wire [95:0] adc1_compressed;
+            // // CHANNEL 1 MSB aligned
+            // for(i=0; i<8; i=i+1)
+            //     begin: bitRepack1
+            //         assign lpf1_compressed[i*12+11:i*12] = {lpf1_tdata[i*16+15:i*16+4]}; // Slice out most significant 12 out of 16
+            //     end
+
+            // for(i=0; i<8; i=i+1)
+            //     begin: bitUnpack1
+            //         assign adc1_tdata[i*16+15:i*16] =  {{adc1_compressed[i*12+11:i*12]}, {4{1'b0}}}; // LSB aligned
+            //     end
+
+
+            // Not using AXI4s, so just force these open
+            assign lpf0copy_tready = 1'b1;
+            assign adc0_tvalid = 1'b1;
+            shannon_whitaker_lpfull_v2 fir_full_0 (
+                .clk_i(aclk),
+                .in_i(lpf0_compressed),
+                .out_o(adc0_compressed)
                 );
+
+            // assign adc1_compressed = lpf1_compressed;
+
+            // assign adc0_compressed = lpf0_compressed; // For filter-less testing
+
+
+            // fir_full_speed fir_full_0 (
+            //     .aclk(aclk),                              // input wire aclk
+            //     `CONNECT_AXI4S_MIN_IF( s_axis_data_ , lpf0_ ),
+            //     `CONNECT_AXI4S_MIN_IF( m_axis_data_ , adc0_ )
+            //     );
 
             fir_full_speed fir_full_2 (
                 .aclk(aclk),                              // input wire aclk
@@ -346,10 +437,10 @@ module zcu111_top(
                                          .s_axis_aclk_0( aclk ), // Used for ADCs
                                          .s_axis_aresetn_0( 1'b1 ),
                                          // feed back to inputs for the ADC Captures
-                                         `CONNECT_AXI4S_MIN_IF( S_AXIS_0_ , adc0_ ),
-                                         `CONNECT_AXI4S_MIN_IF( S_AXIS_1_ , adc1_ ),
-                                         `CONNECT_AXI4S_MIN_IF( S_AXIS_2_ , adc2_ ),
-                                         `CONNECT_AXI4S_MIN_IF( S_AXIS_3_ , adc3_ ),
+                                         `CONNECT_AXI4S_MIN_IF( S_AXIS_0_ , lpf0_ ),
+                                         `CONNECT_AXI4S_MIN_IF( S_AXIS_1_ , adc0_ ),
+                                         `CONNECT_AXI4S_MIN_IF( S_AXIS_2_ , lpf1_ ),
+                                         `CONNECT_AXI4S_MIN_IF( S_AXIS_3_ , adc1_ ),
                                          
                                          .dac1_clk_0_clk_p(DAC4_CLK_P),
                                          .dac1_clk_0_clk_n(DAC4_CLK_N),
