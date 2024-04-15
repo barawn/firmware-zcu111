@@ -7,8 +7,8 @@ module zcu111_top(
         input VP,               // doesn't need a pin loc
         input VN,               // doesn't need a pin loc
         // RFDC inputs
-        input ADC0_CLK_P,       // AF5 (300 MHz)
-        input ADC0_CLK_N,       // AF4 (300 MHz)
+        input ADC0_CLK_P,       // AF5 (300 MHz)(or maybe 600 as specified in IP?) Yes, 600.
+        input ADC0_CLK_N,       // AF4 (300 MHz)(or maybe 600 as specified in IP?)
         input ADC0_VIN_P,       // AP2
         input ADC0_VIN_N,       // AP1
         input ADC1_VIN_P,       // AM2
@@ -37,6 +37,10 @@ module zcu111_top(
 
         input DAC4_CLK_P,       // N5
         input DAC4_CLK_N,       // N4
+        // output DAC4_VOUT_P,     // J2
+        // output DAC4_VOUT_N,     // J1
+        // output DAC5_VOUT_P,     // G2
+        // output DAC5_VOUT_N,     // G1
         output DAC6_VOUT_P,     // E2
         output DAC6_VOUT_N,     // E1
         output DAC7_VOUT_P,     // C2
@@ -53,7 +57,7 @@ module zcu111_top(
         output [1:0] PL_USER_LED        // { AP13, AR13 }
     );
 
-   parameter	     THIS_DESIGN = "MTS";
+    parameter	     THIS_DESIGN = "LPF";
    
     
     (* KEEP = "TRUE"  *)
@@ -66,6 +70,8 @@ module zcu111_top(
     wire aclk_div2;
     wire aresetn = 1'b1;
     // ADC AXI4-Streams
+    // These macros are definied in verilog-library-barawn/include/interfaces.vh.
+    // They definie the tdata, tvalid, and tready wires in a compact way.
     `DEFINE_AXI4S_MIN_IF( adc0_ , 128 );
     `DEFINE_AXI4S_MIN_IF( adc1_ , 128 );
     `DEFINE_AXI4S_MIN_IF( adc2_ , 128 );
@@ -74,10 +80,25 @@ module zcu111_top(
     `DEFINE_AXI4S_MIN_IF( adc5_ , 128 );
     `DEFINE_AXI4S_MIN_IF( adc6_ , 128 );
     `DEFINE_AXI4S_MIN_IF( adc7_ , 128 );
+    // LPF AXI4 Stream
+    `DEFINE_AXI4S_MIN_IF( lpf0_ , 128 );
+    wire lpf0copy_tready; // for ADC captures
+    wire lpf0copy_tvalid;
+    `DEFINE_AXI4S_MIN_IF( lpf1_ , 128 );
+    wire lpf1copy_tready; // for ADC captures
+    wire lpf1copy_tvalid;
+    // `DEFINE_AXI4S_MIN_IF( lpf2_ , 128 );
+    // `DEFINE_AXI4S_MIN_IF( lpf3_ , 128 );
+    // `DEFINE_AXI4S_MIN_IF( lpf4_ , 128 );
+    // `DEFINE_AXI4S_MIN_IF( lpf5_ , 128 );
+    // `DEFINE_AXI4S_MIN_IF( lpf6_ , 128 );
+    // `DEFINE_AXI4S_MIN_IF( lpf7_ , 128 );
     // DAC AXI4 Stream
     `DEFINE_AXI4S_MIN_IF( dac6_ , 256 );
     `DEFINE_AXI4S_MIN_IF( dac7_ , 256 );
-    
+    // `DEFINE_AXI4S_MIN_IF( dac4_ , 256 );
+    // `DEFINE_AXI4S_MIN_IF( dac5_ , 256 );
+
     
     // SYSREF capture register
     (* IOB = "TRUE" *)
@@ -85,66 +106,12 @@ module zcu111_top(
     reg sysref_reg = 0;
     // output clock (187.5 MHz, unused)
     wire adc_clk;
-    
-    // something's wrong with the various sample clocks so let's try to test
-    reg [31:0] adc_clk_counter = {32{1'b0}};
-    (* CUSTOM_CC_SRC = "ACLK" *)
-    reg [31:0] adc_clk_freq = {32{1'b0}};
-    (* CUSTOM_CC_DST = "PSCLK" *)
-    reg [31:0] adc_clk_freq_ps = {32{1'b0}};
-        
-    reg [31:0] ref_clk_counter = {32{1'b0}};
-    (* CUSTOM_CC_SRC = "REFCLK" *)
-    reg [31:0] ref_clk_freq = {32{1'b0}};
-    (* CUSTOM_CC_DST = "PSCLK" *)
-    reg [31:0] ref_clk_freq_ps = {32{1'b0}};
-    
-    reg [31:0] pps_counter = {32{1'b0}};
-    reg pps_flag = 0;
-    wire pps_flag_adcclk;
-    wire pps_flag_refclk;
-    wire adcclk_freq_done;
-    wire refclk_freq_done;
-    
-                
-    // slower PL capture clk b/c 375 is too fast I guess? (75 MHz)
-    wire ref_clk;
-    // reset/locked, maybe pop these through EMIO
-    wire refclkwiz_reset = 1'b0;
-    wire refclkwiz_locked;
 
-    flag_sync u_adcsync(.in_clkA(pps_flag),.clkA(ps_clk),.out_clkB(pps_flag_adcclk),.clkB(adc_clk));
-    flag_sync u_adcdone(.in_clkA(pps_flag_adcclk),.clkA(adc_clk),.out_clkB(adcclk_freq_done),.clkB(ps_clk));
-    flag_sync u_refsync(.in_clkA(pps_flag),.clkA(ps_clk),.out_clkB(pps_flag_refclk),.clkB(ref_clk));
-    flag_sync u_refdone(.in_clkA(pps_flag_refclk),.clkA(ref_clk),.out_clkB(refclk_freq_done),.clkB(ps_clk));
-
-    always @(posedge ps_clk) begin
-        if (adcclk_freq_done) adc_clk_freq_ps <= adc_clk_freq;
-        if (refclk_freq_done) ref_clk_freq_ps <= ref_clk_freq;
-    end
-    
-    always @(posedge adc_clk) begin
-        if (pps_flag_adcclk) adc_clk_freq <= adc_clk_counter;
-        if (pps_flag_adcclk) adc_clk_counter <= {32{1'b0}};
-        else adc_clk_counter <= adc_clk_counter + 1;
-    end        
-    
-    always @(posedge ref_clk) begin
-        if (pps_flag_refclk) ref_clk_freq <= ref_clk_counter;
-        if (pps_flag_refclk) ref_clk_counter <= {32{1'b0}};
-        else ref_clk_counter <= ref_clk_counter + 1;
-    end        
-    
-    always @(posedge ps_clk) begin
-        if (pps_counter == 100000000 - 1) pps_counter <= {32{1'b0}};
-        else pps_counter <= pps_counter + 1;
-        
-        pps_flag <= (pps_counter == {32{1'b0}});
-    end        
-
-    clk_count_vio u_vio(.clk(ps_clk),.probe_in0(adc_clk_freq_ps),.probe_in1(ref_clk_freq_ps));
-    
-    // generate clocks
+    // Generate clocks
+    // Input clock is the 24 MHz FPGA reference clock
+    // ref_clk is 75 MHz
+    // aclk is 375 MHz (for AXI-Stream)
+    // aclk_div2 is 187.5 MHz (half freq of aclk)
     slow_refclk_wiz u_rcwiz(.reset(refclkwiz_reset),
                             .clk_in1_p(FPGA_REFCLK_IN_P),
                             .clk_in1_n(FPGA_REFCLK_IN_N),
@@ -160,19 +127,97 @@ module zcu111_top(
     always @(posedge ref_clk) sysref_reg_slowclk <= sys_ref;
     always @(posedge aclk) sysref_reg <= sysref_reg_slowclk;
     
+    genvar i;
     generate
-         if (THIS_DESIGN == "MTS") begin : MTS
+         if (THIS_DESIGN == "LPF") begin : LPF
+
+            ///////////////////////////////////////////////////////////////////////////////////////////
+            // Channel 0: uses the custom Low Pass Filter implementation from verilog-library-barawn //
+            ///////////////////////////////////////////////////////////////////////////////////////////
+
+            wire [95:0] lpf0_compressed;
+            wire [95:0] adc0_compressed;    
+            // CHANNEL 0 MSB aligned
+            for(i=0; i<8; i=i+1)
+                begin: bitRepack0 // Align data for use with the shannon_whitaker_lpfull_v2 12-bit input
+                    assign lpf0_compressed[i*12+11:i*12] = lpf0_tdata[i*16+15:i*16+4]; // Slice out most significant 12 out of 16.
+                end
+
+            for(i=0; i<8; i=i+1)
+                begin: bitUnpack0 // Receive the 12 bits from the LPF, and re-align to the 12 most significant of 16 for use elsewhere
+                    assign adc0_tdata[i*16+15:i*16] =  {{adc0_compressed[i*12+11:i*12]}, {4{1'b0}}}; // MSB aligned
+                end
+
+            // Not using AXI4s, so just force these open
+            assign lpf0copy_tready = 1'b1;
+            assign adc0_tvalid = 1'b1;
+
+            shannon_whitaker_lpfull_v2 fir_0 (
+                .clk_i(aclk),
+                .in_i(lpf0_compressed),
+                .out_o(adc0_compressed)
+                );
+
+            /////////////////////////////////////////////////////////////////////////
+            // Channel 1: uses the IP generated FIR Low Pass Filter implementation //
+            /////////////////////////////////////////////////////////////////////////
+
+            wire [127:0] lpf1_compressed;
+            wire [127:0] adc1_compressed;
+            // CHANNEL 1 LSB aligned
+            for(i=0; i<8; i=i+1)
+                begin: bitRepack1 // for input to filter
+                    assign lpf1_compressed[i*16+11:i*16] = {{4{1'b0}}, {lpf1_tdata[i*16+15:i*16+4]}}; // Slice out most significant 12 out of 16, and align to least
+                end
+
+            for(i=0; i<8; i=i+1)
+                begin: bitUnpack1 // for output from filter
+                    assign adc1_tdata[i*16+15:i*16] =  {{adc1_compressed[i*16+11:i*16]}, {4{1'b0}}}; // LSB aligned
+                    // reverse the word order (again)
+                    // assign adc1_tdata[(7-i)*16+15:(7-i)*16] =  {{adc1_compressed[i*16+11:i*16]}, {4{1'b0}}}; // LSB aligned
+                end
+
+            // // Force tvalid here since it's driven elsewhere (namely the ADC captures)
+            assign lpf1copy_tvalid = 1'b1;
+            fir_compiler_lpf fir_1 ( // This is 12 bits wide, but data is taken in chunks of 16 LSB aligned
+                .aclk(aclk),         
+                .s_axis_data_tvalid(lpf1copy_tvalid),
+                .s_axis_data_tready(lpf1copy_tready),  
+                .s_axis_data_tdata(lpf1_compressed),
+                .m_axis_data_tvalid(adc1_tvalid),  
+                .m_axis_data_tdata(adc1_compressed),
+                .m_axis_data_tready(adc1_tready)
+                );
+
+            // These two dac_xfer_x2 modules connect:
+            // RF Data Converter ADC AXI4 stream ->
+            // dac_xfer module, which stacks two 128 data into one 256 ->
+            // RF Data Converter DAC AXI4 stream
             dac_xfer_x2 u_dac12_xfer( .aclk(aclk),
                                       .aresetn(1'b1),
                                       .aclk_div2(aclk_div2),
-                                      `CONNECT_AXI4S_MIN_IF( s_axis_ , adc0_ ),
-                                      `CONNECT_AXI4S_MIN_IF( m_axis_ , dac6_ ));
+                                      `CONNECT_AXI4S_MIN_IF( s_axis_ , adc0_ ),// CHANGED FROM 0 1 2 3
+                                      `CONNECT_AXI4S_MIN_IF( m_axis_ , dac6_ )); 
             dac_xfer_x2 u_dac13_xfer( .aclk(aclk),
                                       .aresetn(1'b1),
                                       .aclk_div2(aclk_div2),
                                       `CONNECT_AXI4S_MIN_IF( s_axis_ , adc1_ ),
                                       `CONNECT_AXI4S_MIN_IF( m_axis_ , dac7_ ));
-                                 
+            // dac_xfer_x2 u_dac10_xfer( .aclk(aclk),
+            //                           .aresetn(1'b1),
+            //                           .aclk_div2(aclk_div2),
+            //                           `CONNECT_AXI4S_MIN_IF( s_axis_ , adc2_ ),
+            //                           `CONNECT_AXI4S_MIN_IF( m_axis_ , dac4_ ));
+            // dac_xfer_x2 u_dac11_xfer( .aclk(aclk),
+            //                           .aresetn(1'b1),
+            //                           .aclk_div2(aclk_div2),
+            //                           `CONNECT_AXI4S_MIN_IF( s_axis_ , adc3_ ),
+            //                           `CONNECT_AXI4S_MIN_IF( m_axis_ , dac5_ ));
+
+                        
+
+            // This is the block diagram's (zcu111_mts's) wrapper.
+            // The RF Data Converter IP is inside it, and is communicated with over AXI4 Stream interfaces                     
             zcu111_mts_wrapper u_ps( .Vp_Vn_0_v_p( VP ),
                                          .Vp_Vn_0_v_n( VN ),
                                          // sysref
@@ -204,34 +249,45 @@ module zcu111_top(
                                          .vin3_01_0_v_n( ADC6_VIN_N ),
                                          .vin3_23_0_v_p( ADC7_VIN_P ),
                                          .vin3_23_0_v_n( ADC7_VIN_N ),
-                                         // AXI stream *outputs*
-                                         `CONNECT_AXI4S_MIN_IF( m00_axis_0_ , adc0_ ),
-                                         `CONNECT_AXI4S_MIN_IF( m02_axis_0_ , adc1_ ),
+
+                                         // These are the ADC values
+                                         `CONNECT_AXI4S_MIN_IF( m00_axis_0_ , lpf0_ ), // These two will connect to LPFs
+                                         `CONNECT_AXI4S_MIN_IF( m02_axis_0_ , lpf1_ ), // After the LPFs they will go to adc0_ and adc1_
                                          `CONNECT_AXI4S_MIN_IF( m10_axis_0_ , adc2_ ),
                                          `CONNECT_AXI4S_MIN_IF( m12_axis_0_ , adc3_ ),
                                          `CONNECT_AXI4S_MIN_IF( m20_axis_0_ , adc4_ ),
                                          `CONNECT_AXI4S_MIN_IF( m22_axis_0_ , adc5_ ),
                                          `CONNECT_AXI4S_MIN_IF( m30_axis_0_ , adc6_ ),
                                          `CONNECT_AXI4S_MIN_IF( m32_axis_0_ , adc7_ ),
-                                         // my crap
-                                         .s_axi_aclk_0( aclk_div2 ),
+                                         // resets and clocks
+                                         .s_axi_aclk_0( aclk_div2 ), // Used for DACs  
                                          .s_axi_aresetn_0( 1'b1 ),
-                                         .s_axis_aclk_0( aclk ),
+                                         .s_axis_aclk_0( aclk ), // Used for ADCs
                                          .s_axis_aresetn_0( 1'b1 ),
-                                         // feed back to inputs
-                                         `CONNECT_AXI4S_MIN_IF( S_AXIS_0_ , adc0_ ),
-                                         `CONNECT_AXI4S_MIN_IF( S_AXIS_1_ , adc1_ ),
-                                         `CONNECT_AXI4S_MIN_IF( S_AXIS_2_ , adc2_ ),
-                                         `CONNECT_AXI4S_MIN_IF( S_AXIS_3_ , adc3_ ),
+
+                                         // feed back to inputs for the ADC Captures
+                                         `CONNECT_AXI4S_MIN_IF( S_AXIS_0_ , lpf0_ ),
+                                         `CONNECT_AXI4S_MIN_IF( S_AXIS_1_ , adc0_ ),
+                                         `CONNECT_AXI4S_MIN_IF( S_AXIS_2_ , lpf1_ ),
+                                         `CONNECT_AXI4S_MIN_IF( S_AXIS_3_ , adc1_ ),
                                          
                                          .dac1_clk_0_clk_p(DAC4_CLK_P),
                                          .dac1_clk_0_clk_n(DAC4_CLK_N),
                                          
+                                         // Swapping these for testing does nothing
+                                         // This is because they are hardwired
+                                        //  .vout10_0_v_p(DAC4_VOUT_P),
+                                        //  .vout10_0_v_n(DAC4_VOUT_N),
+                                        //  .vout11_0_v_p(DAC5_VOUT_P),
+                                        //  .vout11_0_v_n(DAC5_VOUT_N),
                                          .vout12_0_v_p(DAC6_VOUT_P),
                                          .vout12_0_v_n(DAC6_VOUT_N),
                                          .vout13_0_v_p(DAC7_VOUT_P),
                                          .vout13_0_v_n(DAC7_VOUT_N),
                                          
+                                         // Drive the DACs
+                                        //  `CONNECT_AXI4S_MIN_IF( s10_axis_0_ , dac4_ ),
+                                        //  `CONNECT_AXI4S_MIN_IF( s11_axis_0_ , dac5_ ),
                                          `CONNECT_AXI4S_MIN_IF( s12_axis_0_ , dac6_ ),
                                          `CONNECT_AXI4S_MIN_IF( s13_axis_0_ , dac7_ ),
 
