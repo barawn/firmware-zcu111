@@ -78,8 +78,6 @@ module lpf_tb;
                             .m_axis_data_tvalid(adc1_tvalid),  
                             .m_axis_data_tdata(adc1_compressed),
                             .m_axis_data_tready(adc1_tready)
-                            // `CONNECT_AXI4S_MIN_IF( s_axis_data_ , lpf1_ ),
-                            // `CONNECT_AXI4S_MIN_IF( m_axis_data_ , adc1_ )
                             );
 
     integer k,f, sample_idx;
