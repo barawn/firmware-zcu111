@@ -59,7 +59,7 @@ module lpf_tb_lucas;
 
     for(idx=0; idx<8; idx=idx+1)
         begin: bitUnpack1
-            assign outsampleB_arr[idx*12+11:idx*12] =  adc1_compressed[idx*16+11:idx*16]; // LSB aligned
+            assign outsampleB_arr[idx*12+11:idx*12] =  adc1_compressed[idx*16+12:idx*16+1]; // LSB aligned, reset to 13 per advice from PSA
         end
     endgenerate
 
@@ -70,17 +70,17 @@ module lpf_tb_lucas;
     // // Not using AXI4s, so just force these open
     assign lpf1_tvalid = 1'b1;
     assign adc1_tready = 1'b1;
-     fir_for_sim uut2 ( // This is 12 bits wide
-                .aclk(clk),         
-                .s_axis_data_tvalid(lpf1_tvalid),
-                .s_axis_data_tready(lpf1_tready),  
-                .s_axis_data_tdata(lpf1_compressed),
-                .m_axis_data_tvalid(adc1_tvalid),  
-                .m_axis_data_tdata(adc1_compressed)
-                // .m_axis_data_tready(adc1_tready)
-                // `CONNECT_AXI4S_MIN_IF( s_axis_data_ , lpf1_ ),
-                // `CONNECT_AXI4S_MIN_IF( m_axis_data_ , adc1_ )
-                );
+    fir_for_sim uut2 ( // This is 12 bits wide
+            .aclk(clk),         
+            .s_axis_data_tvalid(lpf1_tvalid),
+            .s_axis_data_tready(lpf1_tready),  
+            .s_axis_data_tdata(lpf1_compressed),
+            .m_axis_data_tvalid(adc1_tvalid),  
+            .m_axis_data_tdata(adc1_compressed)
+            // .m_axis_data_tready(adc1_tready)
+            // `CONNECT_AXI4S_MIN_IF( s_axis_data_ , lpf1_ ),
+            // `CONNECT_AXI4S_MIN_IF( m_axis_data_ , adc1_ )
+            );
 
     integer k,f, sample_idx;
     initial begin

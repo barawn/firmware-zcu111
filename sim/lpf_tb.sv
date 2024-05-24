@@ -59,7 +59,7 @@ module lpf_tb;
 
     for(idx=0; idx<8; idx=idx+1)
         begin: bitUnpack1
-            assign outsampleB_arr[idx*12+11:idx*12] =  adc1_compressed[idx*16+11:idx*16]; // LSB aligned
+            assign outsampleB_arr[idx*12+11:idx*12] =  adc1_compressed[idx*16+12:idx*16+1]; // LSB aligned, reset to 13 per advice from PSA
         end
     endgenerate
 
